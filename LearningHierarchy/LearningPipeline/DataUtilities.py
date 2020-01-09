@@ -85,12 +85,12 @@ class ImagesIterator(Iterator):
         transformed_data_iter = inputs_queue.map(self.transformData).batch(self.batch_s)
         return transformed_data_iter
 
-    def transformData(self, img_seq, gt_seq):
-        gt_seq = tf.cast(gt_seq ,dtype=tf.float32)
-        file_content = tf.io.read_file(img_seq)
-        img_seq = tf.image.decode_jpeg(file_content, channels=3)
-        img_seq = self.preprocessImage(img_seq)
-        return img_seq, gt_seq
+    def transformData(self, img_path, gt):
+        gt = tf.cast(gt ,dtype=tf.float32)
+        img = tf.io.read_file(img_path)
+        img = tf.image.decode_jpeg(img, channels=3)
+        img = self.preprocessImage(img)
+        return img, gt
 
     def preprocessImage(self, img):
         img = tf.image.resize(img, self.img_dims)
