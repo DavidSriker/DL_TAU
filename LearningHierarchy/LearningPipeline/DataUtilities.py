@@ -2,9 +2,8 @@ import os
 import glob
 import re
 import numpy as np
-import cv2
+# import cv2
 import tensorflow as tf
-from tensorflow.data import Dataset
 from tensorflow.keras.preprocessing.image import Iterator
 
 
@@ -67,41 +66,34 @@ class ImagesIterator(Iterator):
         super(ImagesIterator, self).__init__(self.data.num_samples, batch_s, shuffle, seed)
         return
 
-    def imagePreperation(self, img_path):
-        img = self.loadImage(img_path)
-        if img.shape != self.new_img_dim:
-            # Linear interpolation for speed and performance
-            img = cv2.resize(img, self.new_img_dim, interpolation=cv2.INTER_LINEAR)
-        return cv2.cvtcolor(img, cv2.COLOR_BGR2RGB)
-
-    def loadImage(self, img_path):
-        return cv2.imread(img_path)
+    # not in use for the moment
+    # def imagePreperation(self, img_path):
+    #     img = self.loadImage(img_path)
+    #     if img.shape != self.new_img_dim:
+    #         # Linear interpolation for speed and performance
+    #         img = cv2.resize(img, self.new_img_dim, interpolation=cv2.INTER_LINEAR)
+    #     return cv2.cvtcolor(img, cv2.COLOR_BGR2RGB)
+    #
+    # def loadImage(self, img_path):
+    #     return cv2.imread(img_path)
 
     def generateBatches(self, validation=False):
-        seed = random.randint(0, 2 ** 31 - 1)
-        inputs_queue = Dataset.from_tensor_slices([self.data.images_path,
-                                                    self.data.images_gt]).shuffle(not validation,
+        seed = np.random.randint(0, 2 ** 31 - 1)
+        inputs_queue = tf.data.Dataset.from_tensor_slices((self.data.images_path,
+                                                    self.data.images_gt)).shuffle(not validation,
                                                                                     seed=seed)
         transformed_data_iter = inputs_queue.map(self.transformData).batch(self.batch_s)
         return transformed_data_iter
 
-    def transformData(self, inputs_queue):
-        pnt_seq = tf.cast(inputs_queue[1], dtype=tf.float32)
-        file_content = tf.io.read_file(inputs_queue[0])
-        image_seq = tf.image.decode_jpeg(file_content, channels=3)
-        image_seq = self.preprocessImage(image_seq)
-        return image_seq, pnt_seq
+    def transformData(self, img_seq, gt_seq):
+        gt_seq = tf.cast(gt_seq ,dtype=tf.float32)
+        file_content = tf.io.read_file(img_seq)
+        img_seq = tf.image.decode_jpeg(file_content, channels=3)
+        img_seq = self.preprocessImage(img_seq)
+        return img_seq, gt_seq
 
     def preprocessImage(self, img):
-        """ Preprocess an input image
-        Args:
-            Image: A uint8 tensor
-        Returns:
-            image: A preprocessed float32 tensor.
-        """
-        # tf.image.resize_images
-        # ResizeMethod. Defaults to bilinear
-        img = tf.image.resize(img, tf.cast(self.img_dims, dtype=tf.float32))
+        img = tf.image.resize(img, self.img_dims)
         img = tf.cast(img, dtype=tf.float32)
         img = tf.divide(img, 255.0)
         return img
