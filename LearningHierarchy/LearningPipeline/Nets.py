@@ -36,6 +36,7 @@ class ResNet8(tf.keras.Model):
         L2_REGULIZER_VAL = 1e-4
         DROP_PROBABILITY = 0.5
 
+
         # convolution 2D
         self.conv1 = l.Conv2D(int(32 * f), KERNEL_5,
                                 strides=STRIDE,

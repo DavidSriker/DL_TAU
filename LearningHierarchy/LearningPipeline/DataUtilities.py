@@ -78,15 +78,12 @@ class ImagesIterator(Iterator):
     # def loadImage(self, img_path):
     #     return cv2.imread(img_path)
 
-    def generateBatches(self, validation=False):
+    def generateBatches(self):
         seed = np.random.randint(0, 2 ** 31 - 1)
-        inputs_queue = tf.data.Dataset.from_tensor_slices((self.data.images_path,
-                                                    self.data.images_gt)).shuffle(not validation,
-                                                                                    seed=seed)
-        if not validation:
-            transformed_data_iter = inputs_queue.map(self.transformData).batch(self.batch_s)
-        else:
-            transformed_data_iter = inputs_queue.map(self.transformData).batch(1)
+        inputs_queue = tf.data.Dataset.from_tensor_slices((self.data.images_path, self.data.images_gt)).\
+            shuffle(self.num_samples, seed=seed)
+        transformed_data_iter = inputs_queue.map(self.transformData).batch(self.batch_s)
+
         return transformed_data_iter
 
     def transformData(self, img_path, gt):
@@ -94,10 +91,12 @@ class ImagesIterator(Iterator):
         img = tf.io.read_file(img_path)
         img = tf.image.decode_jpeg(img, channels=3)
         img = self.preprocessImage(img)
+
         return img, gt
 
     def preprocessImage(self, img):
         img = tf.image.resize(img, self.img_dims)
         img = tf.cast(img, dtype=tf.float32)
         img = tf.divide(img, 255.0)
+
         return img
