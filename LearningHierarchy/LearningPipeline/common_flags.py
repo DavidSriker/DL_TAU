@@ -1,6 +1,12 @@
 import gflags
+import os
+import glob
+import sys
 
 FLAGS = gflags.FLAGS
+
+rel_path = os.path.normpath(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir)
+# rel_path = sys.path[2]
 
 # Train parameters
 gflags.DEFINE_integer('img_width', 300, 'Target Image Width')
@@ -14,17 +20,12 @@ gflags.DEFINE_integer('output_dim', 3, "Number of output dimensionality")
 gflags.DEFINE_float('gamma', 0.1, "Factor the velocity loss for weighted MSC")
 
 gflags.DEFINE_string('train_dir',
-                     r"D:\Users\lidor\PycharmProjects\deepdroneracing\Deep_Learning_TAU\Data\Datasets\simulation_training_data\Training",
+                     os.path.join(rel_path, "Data", "Datasets", "simulation_training_data", "Training"),
                      'Folder containing training experiments')
-gflags.DEFINE_string('val_dir', r"D:\Users\lidor\PycharmProjects\deepdroneracing\Deep_Learning_TAU\Data\Datasets\validation_real_data\real_data",
+gflags.DEFINE_string('val_dir', os.path.join(rel_path, "Data", "Datasets", "validation_real_data", "real_data"),
                      'Folder containing validation experiments')
-gflags.DEFINE_string('checkpoint_dir', r"D:\Users\lidor\PycharmProjects\deepdroneracing\Deep_Learning_TAU\LearningHierarchy\LearningPipeline\Checkpoint",
+gflags.DEFINE_string('checkpoint_dir', os.path.join(rel_path, "LearningHierarchy", "LearningPipeline", "Checkpoint"),
                      "Directory name to save checkpoints and logs.")
-
-# Input Queues reading
-gflags.DEFINE_integer('num_threads', 8, 'Number of threads reading and '
-                      '(optionally) preprocessing input files into queues')
-gflags.DEFINE_integer('capacity_queue', 100, 'Capacity of input queue. A high number speeds up computation but requires more RAM')
 
 # Log parameters
 gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
@@ -35,11 +36,16 @@ gflags.DEFINE_integer("summary_freq", 100, "Logging every log_freq iterations")
 gflags.DEFINE_integer("save_latest_freq", 100, "Save the latest model every save_latest_freq iterations (overwrites the previous latest model)")
 
 # Testing parameters
-gflags.DEFINE_string('test_dir', "../../data/validation_sim2real/beauty", 'Folder containing'
-                     ' testing experiments')
-gflags.DEFINE_string('output_dir', "./tests/test_0", 'Folder containing'
-                     ' testing experiments')
-gflags.DEFINE_string("ckpt_file", r"D:\Users\lidor\PycharmProjects\deepdroneracing\Deep_Learning_TAU\LearningHierarchy\LearningPipeline\Checkpoint\.ckpt",
+# gflags.DEFINE_string('test_dir', "../../data/validation_sim2real/beauty", 'Folder containing'
+#                      ' testing experiments')
+# gflags.DEFINE_string('output_dir', "./tests/test_0", 'Folder containing'
+#                      ' testing experiments')
+
+directory_pb_file = os.path.join(rel_path, "LearningHierarchy", "LearningPipeline", "Checkpoint")
+latest_pb_file = max(glob.glob(os.path.join(directory_pb_file, '*')), key=os.path.getmtime)
+# latest_pb_file = max([os.path.join(directory_pb_file, d) for d in os.listdir(directory_pb_file)], key=os.path.getmtime)
+gflags.DEFINE_string("pb_file", os.path.join(latest_pb_file, "saved_model.pb"),
                      "Checkpoint file")
+
 gflags.DEFINE_integer('test_img_width', 300, 'Target Image Width')
 gflags.DEFINE_integer('test_img_height', 200, 'Target Image Height')
