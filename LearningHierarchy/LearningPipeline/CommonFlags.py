@@ -5,7 +5,9 @@ import sys
 
 FLAGS = gflags.FLAGS
 
-rel_path = os.path.normpath(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir)
+# rel_path = os.path.normpath(os.getcwd() + os.sep + os.pardir + os.sep + os.pardir)
+# rel_path = os.path.normpath(os.getcwd())
+rel_path = os.getcwd()
 # rel_path = sys.path[2]
 
 # Train parameters
@@ -17,12 +19,12 @@ gflags.DEFINE_float("beta1", 0.9, "Momentum term of adam")
 gflags.DEFINE_float("f", 1.0, "Model Width, float in [0,1]")
 gflags.DEFINE_integer('output_dim', 3, "Number of output dimensionality")
 
-gflags.DEFINE_float('gamma', 0.1, "Factor the velocity loss for weighted MSC")
+gflags.DEFINE_float('gamma', 0.1, "Factor the velocity loss for weighted MSE")
 
 gflags.DEFINE_string('train_dir',
-                     os.path.join(rel_path, "Data", "Datasets", "simulation_training_data", "Training"),
+                     os.path.join(rel_path, "Data", "Datasets", "SimulationTrainingData", "Training"),
                      'Folder containing training experiments')
-gflags.DEFINE_string('val_dir', os.path.join(rel_path, "Data", "Datasets", "validation_real_data", "real_data"),
+gflags.DEFINE_string('val_dir', os.path.join(rel_path, "Data", "Datasets", "ValidationRealData", "real_data"),
                      'Folder containing validation experiments')
 gflags.DEFINE_string('checkpoint_dir', os.path.join(rel_path, "LearningHierarchy", "LearningPipeline", "Checkpoint"),
                      "Directory name to save checkpoints and logs.")
