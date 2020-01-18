@@ -9,4 +9,8 @@ except gflags.FlagsError:
     sys.exit(1)
 
 trl = TrajectoryLearner(FLAGS)
-trl.train()
+
+if not FLAGS.test_phase:
+    trl.train()
+else:
+    trl.test()
