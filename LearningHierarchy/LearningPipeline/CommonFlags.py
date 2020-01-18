@@ -35,7 +35,8 @@ gflags.DEFINE_integer("max_epochs", 4, "Maximum number of training epochs")
 
 gflags.DEFINE_bool('resume_train', False, 'Whether to restore a trained'
                    ' model for training')
-gflags.DEFINE_integer("summary_freq", 100, "Logging every log_freq iterations")
+gflags.DEFINE_integer("summary_freq_iter", 100, "Logging every log_freq iterations")
+gflags.DEFINE_integer("summary_freq_epoch", 1, "Logging every log_freq epochs")
 # gflags.DEFINE_integer("save_latest_freq", 100, "Save the latest model every save_latest_freq iterations (overwrites the previous latest model)")
 gflags.DEFINE_integer("save_latest_period", 1, "Save the latest model every several epochs"
                                         " (overwrites the previous latest model)")
@@ -46,7 +47,8 @@ gflags.DEFINE_integer("save_latest_period", 1, "Save the latest model every seve
 # gflags.DEFINE_string('output_dir', "./tests/test_0", 'Folder containing'
 #                      ' testing experiments')
 
-directory_pb_file = os.path.join(rel_path, "LearningHierarchy", "LearningPipeline", "Checkpoint")
+gflags.DEFINE_string('directory_pb_file', os.path.join(rel_path, "LearningHierarchy", "LearningPipeline", "Checkpoint"),
+                     "Directory to the pb saved model file")
 # latest_pb_file = max(glob.glob(os.path.join(directory_pb_file, '*')), key=os.path.getmtime)
 # # latest_pb_file = max([os.path.join(directory_pb_file, d) for d in os.listdir(directory_pb_file)], key=os.path.getmtime)
 # gflags.DEFINE_string("pb_file", os.path.join(latest_pb_file, "saved_model.pb"),
