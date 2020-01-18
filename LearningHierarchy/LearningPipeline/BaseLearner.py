@@ -102,12 +102,12 @@ class TrajectoryLearner(object):
         self.mdl = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
 
         self.mdl.compile(optimizer=custom_optimizer,
-                        loss=self.loss)
+                        loss=self.loss,
+                         metrics=['accuracy'])
 
         self.mdl.fit(train_data,
                      epochs=self.config.max_epochs,
                      validation_data=val_data)
-
 
         # for epoch in range(self.config.max_epochs):
         #     self.epoch = epoch
