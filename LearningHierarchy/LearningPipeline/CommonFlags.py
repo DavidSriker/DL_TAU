@@ -24,13 +24,14 @@ gflags.DEFINE_float('gamma', 0.1, "Factor the velocity loss for weighted MSE")
 gflags.DEFINE_string('train_dir',
                      os.path.join(rel_path, "Data", "Datasets", "SimulationTrainingData", "Training"),
                      'Folder containing training experiments')
-gflags.DEFINE_string('val_dir', os.path.join(rel_path, "Data", "Datasets", "ValidationRealData", "real_data"),
+gflags.DEFINE_string('val_dir', os.path.join(rel_path, "Data", "Datasets", "ValidationRealData", "RealData"),
                      'Folder containing validation experiments')
 gflags.DEFINE_string('checkpoint_dir', os.path.join(rel_path, "LearningHierarchy", "LearningPipeline", "Checkpoint"),
                      "Directory name to save checkpoints and logs.")
 
 # Log parameters
-gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
+# gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
+gflags.DEFINE_integer("max_epochs", 2, "Maximum number of training epochs")
 
 gflags.DEFINE_bool('resume_train', False, 'Whether to restore a trained'
                    ' model for training')
