@@ -31,12 +31,14 @@ gflags.DEFINE_string('checkpoint_dir', os.path.join(rel_path, "LearningHierarchy
 
 # Log parameters
 # gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
-gflags.DEFINE_integer("max_epochs", 2, "Maximum number of training epochs")
+gflags.DEFINE_integer("max_epochs", 4, "Maximum number of training epochs")
 
 gflags.DEFINE_bool('resume_train', False, 'Whether to restore a trained'
                    ' model for training')
 gflags.DEFINE_integer("summary_freq", 100, "Logging every log_freq iterations")
-gflags.DEFINE_integer("save_latest_freq", 100, "Save the latest model every save_latest_freq iterations (overwrites the previous latest model)")
+# gflags.DEFINE_integer("save_latest_freq", 100, "Save the latest model every save_latest_freq iterations (overwrites the previous latest model)")
+gflags.DEFINE_integer("save_latest_period", 1, "Save the latest model every several epochs"
+                                        " (overwrites the previous latest model)")
 
 # Testing parameters
 # gflags.DEFINE_string('test_dir', "../../data/validation_sim2real/beauty", 'Folder containing'
@@ -45,10 +47,12 @@ gflags.DEFINE_integer("save_latest_freq", 100, "Save the latest model every save
 #                      ' testing experiments')
 
 directory_pb_file = os.path.join(rel_path, "LearningHierarchy", "LearningPipeline", "Checkpoint")
-latest_pb_file = max(glob.glob(os.path.join(directory_pb_file, '*')), key=os.path.getmtime)
-# latest_pb_file = max([os.path.join(directory_pb_file, d) for d in os.listdir(directory_pb_file)], key=os.path.getmtime)
-gflags.DEFINE_string("pb_file", os.path.join(latest_pb_file, "saved_model.pb"),
-                     "Checkpoint file")
+# latest_pb_file = max(glob.glob(os.path.join(directory_pb_file, '*')), key=os.path.getmtime)
+# # latest_pb_file = max([os.path.join(directory_pb_file, d) for d in os.listdir(directory_pb_file)], key=os.path.getmtime)
+# gflags.DEFINE_string("pb_file", os.path.join(latest_pb_file, "saved_model.pb"),
+#                      "Checkpoint file")
 
 gflags.DEFINE_integer('test_img_width', 300, 'Target Image Width')
 gflags.DEFINE_integer('test_img_height', 200, 'Target Image Height')
+
+gflags.DEFINE_bool('test_phase', False, 'Whether to restore a trained model and test')
