@@ -8,6 +8,8 @@ from LearningHierarchy.LearningPipeline.DataUtilities import *
 
 import matplotlib.pyplot as plt
 
+from tensorboard.plugins.hparams import api as hp
+
 from datetime import datetime
 
 
@@ -42,7 +44,7 @@ class TrajectoryLearner(object):
         if not os.path.exists(path):
             os.mkdir(path)
         tf.saved_model.save(self.mdl, path)
-        # self.mdl.save(path) # does the exact same thing
+        self.mdl.save(path)  # does the exact same thing
 
     def train(self):
 
@@ -67,38 +69,34 @@ class TrajectoryLearner(object):
         if not os.path.exists(self.config.checkpoint_dir):
             os.mkdir(self.config.checkpoint_dir)
 
-        self.train_steps_per_epoch = int(tf.math.ceil(n_samples_train / self.config.batch_size))
+        # self.train_steps_per_epoch = int(tf.math.ceil(n_samples_train / self.config.batch_size))
 
         self.mdl = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
 
         if self.config.resume_train:
             print("Resume training from previous checkpoint")
-            latest_pb_file = max([os.path.join(dp, f) for dp, dn, filenames in os.walk(self.config.directory_pb_file) for f in
-                      filenames if os.path.splitext(f)[1] == '.pb'], key=os.path.getmtime)
-            self.latest_pb_directory = os.path.dirname(latest_pb_file)
-            self.mdl_temp = tf.saved_model.load(self.latest_pb_directory)  # this includes weights and everything!
-            # check out the next 4 lines!
-            # self.mdl.weights = self.mdl_temp.trainable_variables.weights
-            # self.mdl.optimizer = self.mdl_temp.optimizer
+
+            # # load .pb file
+            # latest_pb_file = max([os.path.join(dp, f) for dp, dn, filenames in os.walk(self.config.directory_pb_file) for f in
+            #           filenames if '.pb' in f], key=os.path.getmtime)
+            # self.latest_pb_directory = os.path.dirname(latest_pb_file)
+            # self.mdl_temp = tf.saved_model.load(self.latest_pb_directory)  # this includes weights and everything!
             # loss, accuracy, mse = self.mdl.evaluate(val_data)
             # print("Restored model, accuracy: {}%".format(100*acc))
 
-            # latest_ckpt_file = max([os.path.join(dp, f) for dp, dn, filenames in
-            #                         os.walk(os.path.join(self.config.checkpoint_dir, 'TrainingLog')) for f in
-            #                         filenames if os.path.splitext(f)[1] == '.pb'], key=os.path.getmtime)
-            # self.latest_ckpt_directory = os.path.dirname(latest_ckpt_file)
-            # self.mdl.load_weights(self.ltest_ckpt_file)
-        # else:
+            # load .pb file
+            latest_ckpt_file = max([os.path.join(dp, f) for dp, dn, filenames in
+                                    os.walk(os.path.join(self.config.checkpoint_dir, 'TrainingLog')) for f in
+                                    filenames if '.ckpt' in f], key=os.path.getmtime)
+            self.latest_ckpt_directory = os.path.dirname(latest_ckpt_file)
+            self.mdl.load_weights(os.path.join(self.latest_ckpt_directory, '.ckpt'))
 
         self.mdl.compile(optimizer=custom_optimizer,
                         loss=self.loss,
                          metrics=['accuracy', 'mse'])
 
-        # # TODO: check if to put this compile in the self.config.resume_train 'else:' condition
-        # self.mdl.compile(optimizer=custom_optimizer,
-        #                 loss=self.loss,
-        #                  metrics=['accuracy', 'mse'])
-
+        # set callbacks
+        # saving the model callback
         path_save_callback_temp = os.path.join(self.config.checkpoint_dir, 'TrainingLog')
         if not os.path.exists(path_save_callback_temp):
             os.mkdir(path_save_callback_temp)
@@ -110,7 +108,7 @@ class TrajectoryLearner(object):
                                                          verbose=1,
                                                          # save_freq=self.config.save_latest_freq  # saves every few steps...
                                                          period=self.config.save_latest_period)  # saves every few epochs
-
+        # tensorboard summary visualization callback
         path_summary_callback_temp = os.path.join(self.config.checkpoint_dir, 'TrainingLog', 'Logs')
         if not os.path.exists(path_summary_callback_temp):
             os.mkdir(path_summary_callback_temp)
@@ -121,8 +119,20 @@ class TrajectoryLearner(object):
                                                           write_images=True,
                                                           # update_freq=self.config.summary_freq_epoch)
                                                             update_freq='epoch')
-
+        # # custum tensorboard summary visualization cal
+        # metrics_path = os.path.join(path_summary_callback, 'metrics')
+        # if not os.path.exists(metrics_path):
+        #     os.mkdir(metrics_path)
+        # HP_OPTIMIZER = hp.HParam('optimizer', hp.Discrete(['adam', 'sgd']))
         # file_writer = tf.summary.create_file_writer(path_summary_callback + "\\metrics")
+        # with file_writer.as_default():
+        #     hp.hparams_config(
+        #         hparams=[HP_OPTIMIZER],
+        #         metrics=[hp.Metric('accuracy', display_name='Accuracy')]  # , hp.Metric('mse', display_name='MSE')]
+        #     )
+
+        # hprm_callback = hp.KerasCallback(metrics_path, hp.hparams)
+
         # file_writer.set_as_default()
         # learning_rate_temp = self.config.learning_rate
 
@@ -140,31 +150,53 @@ class TrajectoryLearner(object):
             # return learning_rate
         #
         # lr_callback = tf.keras.callbacks.LearningRateScheduler(lr_schedule)
-        #
 
         # self.history = self.mdl.fit(train_data, epochs=self.config.max_epochs, validation_data=val_data,
         #                             callbacks=[save_callback, summary_callback, lr_callback])
         self.history = self.mdl.fit(train_data, epochs=self.config.max_epochs, validation_data=val_data,
                                     callbacks=[save_callback, summary_callback])
 
-        # self.mdl.summary()
+        self.mdl.summary()
 
         self.save()
 
-        print(1)
+        print('-----------------finished to train-----------------')
 
     def test(self):
 
+        gpu_config = tf.config.experimental.list_physical_devices('GPU')
+        if gpu_config:
+            try:
+                # Currently, memory growth needs to be the same across GPUs
+                for gpu in gpu_config:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                    gpus = tf.config.experimetal.list_physical_devices('GPU')
+                    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+                    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+            except RuntimeError as e:
+                # Memory growth must be set before GPUs have been initialized
+                print(e)
+
+        custom_optimizer = tf.keras.optimizers.Adam(learning_rate=self.config.learning_rate, beta_1=self.config.beta1)
+
         # get test dataset
-        # load the dataset regularly
-        # due it using real time images acqusition
+        test_data, n_samples_test = self.dataLoading(validation=True)
 
-        # build model
+        self.mdl_test = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
 
-        # load weights (ckpt)
+        # load ckpt file
+        latest_ckpt_file = max([os.path.join(dp, f) for dp, dn, filenames in
+                                os.walk(os.path.join(self.config.checkpoint_dir, 'TrainingLog')) for f in
+                                filenames if '.ckpt' in f], key=os.path.getmtime)
+        self.latest_ckpt_directory = os.path.dirname(latest_ckpt_file)
+        self.mdl_test.load_weights(os.path.join(self.latest_ckpt_directory, '.ckpt'))
 
-        # evalue
+        self.mdl_test.compile(optimizer=custom_optimizer,
+                         loss=self.loss,
+                         metrics=['accuracy', 'mse'])
 
-        # loss, acc = model.evaluate(test_images, test_labels)  # problem! tf.saved_models.load has no attribute fit or evaluate! it is not a tf.keras!
+        # evaluate
+        results = self.mdl_test.evaluate(test_data)
+        print('test loss, test acc, test mse:', results)
 
-        pass
+        print('-----------------finished to evaluate-----------------')
