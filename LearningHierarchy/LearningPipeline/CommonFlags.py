@@ -35,7 +35,7 @@ gflags.DEFINE_string('checkpoint_dir', os.path.join(rel_path, "LearningHierarchy
 # gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
 gflags.DEFINE_integer("max_epochs", 4, "Maximum number of training epochs")
 
-gflags.DEFINE_bool('resume_train', True, 'Whether to restore a trained'
+gflags.DEFINE_bool('resume_train', False, 'Whether to restore a trained'
                    ' model for training')
 gflags.DEFINE_integer("summary_freq_iter", 100, "Logging every log_freq iterations")
 gflags.DEFINE_integer("summary_freq_epoch", 1, "Logging every log_freq epochs")

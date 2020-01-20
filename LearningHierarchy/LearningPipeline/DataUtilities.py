@@ -78,13 +78,14 @@ class ImagesIterator(Iterator):
     # def loadImage(self, img_path):
     #     return cv2.imread(img_path)
 
-    def generateBatches(self):
+    def generateData(self):
         seed = np.random.randint(0, 2 ** 31 - 1)
-        inputs_queue = tf.data.Dataset.from_tensor_slices((self.data.images_path, self.data.images_gt)).\
+        inputs_queue = tf.data.Dataset.from_tensor_slices((self.data.images_path, self.data.images_gt)). \
             shuffle(self.num_samples, seed=seed)
-        transformed_data_iter = inputs_queue.map(self.transformData).batch(self.batch_s)
+        return inputs_queue.map(self.transformData)
 
-        return transformed_data_iter
+    def generateBatches(self):
+        return self.generateData().batch(self.batch_s)
 
     def transformData(self, img_path, gt):
         gt = tf.cast(gt, dtype=tf.float32)

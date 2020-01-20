@@ -1,29 +1,9 @@
 import tensorflow as tf
-# from tensorflow.keras import layers as l
 import tensorflow.keras.layers as l
-# from tensorflow.keras import regularizers as reg
 import tensorflow.keras.regularizers as reg
-# from tensorflow.keras import merge as m
 
-# # constants
-# STRIDE = 2
-# KERNEL_1 = 1
-# KERNEL_3 = 3
-# KERNEL_5 = 5
-# POOL_SIZE = 3
-# L2_REGULIZER_VAL = 1e-4
-# DROP_PROBABILITY = 0.5
 
 class ResNet8(tf.keras.Model):
-    # # constants
-    # STRIDE = 2
-    # KERNEL_1 = 1
-    # KERNEL_3 = 3
-    # KERNEL_5 = 5
-    # POOL_SIZE = 3
-    # L2_REGULIZER_VAL = 1e-4
-    # DROP_PROBABILITY = 0.5
-
     def __init__(self, out_dim, f=0.25):
         super(ResNet8, self).__init__()
 
