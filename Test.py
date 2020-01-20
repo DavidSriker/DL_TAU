@@ -9,4 +9,7 @@ except gflags.FlagsError:
     sys.exit(1)
 
 trl = TrajectoryLearner(FLAGS)
-trl.test()
+if FLAGS.tflite:
+    trl.testTFLite(FLAGS.directory_pb_file)
+else:
+    trl.test()

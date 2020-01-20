@@ -60,5 +60,5 @@ gflags.DEFINE_integer('test_img_width', 300, 'Target Image Width')
 gflags.DEFINE_integer('test_img_height', 200, 'Target Image Height')
 
 gflags.DEFINE_bool('test_phase', True, 'Whether to restore a trained model and test')
-
+gflags.DEFINE_bool('tflite', True, 'Whether to restore a trained model and test')
 gflags.DEFINE_string('HP_OPTIMIZER', hp.HParam('optimizer', hp.Discrete(['adam', 'sgd'])), 'fine tune optimizer')

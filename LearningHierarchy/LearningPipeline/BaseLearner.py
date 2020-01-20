@@ -9,19 +9,34 @@ from tensorboard.plugins.hparams import api as hp
 print("TensorFlow version: {}".format(tf.__version__))
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
+class DataMode:
+    train = 0
+    validation = 1
+    test = 2
+
 
 class TrajectoryLearner(object):
     def __init__(self, config):
         self.config = config
+        self.data_modes = DataMode()
         return
 
-    def dataLoading(self, validation=False):
-        if not validation:
-            iter = ImagesIterator(directory=self.config.train_dir)
+    def dataLoading(self, mode):
+        """
+        mode=0 -> training
+        mode=1 -> validation
+        mode=2 -> test
+        """
+        if mode == 0:
+            img_iter = ImagesIterator(directory=self.config.train_dir)
+        elif mode == 1:
+            img_iter = ImagesIterator(directory=self.config.val_dir)
+        elif mode == 2:
+            img_iter = ImagesIterator(directory=self.config.val_dir, batch_s=1)
         else:
-            iter = ImagesIterator(directory=self.config.val_dir)
-        data_iter = iter.generateBatches()
-        return data_iter, iter.num_samples
+            print("Wrong mode, should be either 0,1,2; please check!")
+        data_iter = img_iter.generateBatches()
+        return data_iter, img_iter.num_samples
 
     def loss(self, y_true, y_pred):
         coordinate_loss = tf.keras.losses.MSE(y_true=y_true[:, :2], y_pred=y_pred[:, :2])
@@ -44,6 +59,17 @@ class TrajectoryLearner(object):
             os.mkdir(path)
         # tf.saved_model.save(self.mdl, path)
         self.mdl.save(path)  # does the exact same thing
+        return path
+
+    def saveTFLiteModel(self, saved_model_path):
+        model_name = self.mdl.name
+        lite_model_path = os.path.join(saved_model_path, "TFLITE_MODEL")
+        if not os.path.exists(lite_model_path):
+            os.mkdir(lite_model_path)
+        lite_mdl = tf.lite.TFLiteConverter.from_saved_model(saved_model_path)
+        lite_mdl_converted = lite_mdl.convert()
+        open(os.path.join(lite_model_path, model_name +
+                          '_epoch_{:}_converted_model.tflite'.format(self.config.max_epochs)), "wb").write(lite_mdl_converted)
         return
 
     def setTensorboardSummaries(self):
@@ -94,8 +120,8 @@ class TrajectoryLearner(object):
     def train(self):
         self.setGPUs()
         # data setup
-        train_data, n_samples_train = self.dataLoading()
-        val_data, n_samples_val = self.dataLoading(validation=True)
+        train_data, n_samples_train = self.dataLoading(self.data_modes.train)
+        val_data, n_samples_val = self.dataLoading(self.data_modes.validation)
 
         if not os.path.exists(self.config.checkpoint_dir):
             os.mkdir(self.config.checkpoint_dir)
@@ -128,7 +154,9 @@ class TrajectoryLearner(object):
                                     callbacks=[self.save_callback, self.summary_callback])
 
         self.mdl.summary()
-        # self.save() TODO - Do we need this?
+        if self.config.tflite:
+            p = self.save()
+            self.saveTFLiteModel(p)
 
         print(20 * "-", "Done Training", 20 * "-")
         return
@@ -138,7 +166,7 @@ class TrajectoryLearner(object):
         self.setGPUs()
 
         # data setup
-        test_data, n_samples_test = self.dataLoading(validation=True)
+        test_data, n_samples_test = self.dataLoading(self.data_modes.test)
 
         # network setup
         self.mdl_test = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
@@ -159,4 +187,27 @@ class TrajectoryLearner(object):
         print(20 * "-", "Done Evaluating", 20 * "-")
 
         print('Test Loss: {:}\nTest Accuracy: {:}\nTest MSE: {:}'.format(*results))
+        return
+
+    def testTFLite(self, tflite_path):
+
+        # todo need to add logic to get the desired tflite path
+        tflite_path = os.path.join(tflite_path, "res_net8_epoch_4", "TFLITE_MODEL", "res_net8_epoch_4_converted_model.tflite")
+        self.setGPUs()
+        # network setup
+        self.tf_lite_mdl = tf.lite.Interpreter(model_path=tflite_path)
+        self.tf_lite_mdl.allocate_tensors()
+        in_details = self.tf_lite_mdl.get_input_details()
+        out_details = self.tf_lite_mdl.get_output_details()
+
+        # data setup
+        test_data, n_samples_test = self.dataLoading(self.data_modes.test)
+
+        # evaluate
+        for img, gt in test_data:
+            self.tf_lite_mdl.set_tensor(in_details[0]['index'], img.numpy())
+            self.tf_lite_mdl.invoke()
+            pred = self.tf_lite_mdl.get_tensor(out_details[0]['index'])
+            diff = np.sum(np.abs(pred - gt.numpy()))
+            print(diff)
         return
