@@ -1,5 +1,11 @@
 from LearningHierarchy.LearningPipeline.CommonFlags import *
 from LearningHierarchy.LearningPipeline.BaseLearner import *
+import sys
+
+optimizer_mode = ["Adam",
+                  "SGD",
+                  "Adagrad",
+                  "Adadelta"]
 
 # Utility main to load flags
 try:
@@ -10,6 +16,6 @@ except gflags.FlagsError:
 
 trl = TrajectoryLearner(FLAGS)
 if FLAGS.tflite:
-    trl.testTFLite(FLAGS.directory_pb_file)
+    trl.testTFLite(optimizer_mode[2])
 else:
-    trl.test()
+    trl.test(optimizer_mode[3])
