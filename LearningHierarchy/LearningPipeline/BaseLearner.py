@@ -4,7 +4,7 @@ from datetime import datetime
 import time
 import matplotlib.pyplot as plt
 import gc
-
+import pickle
 from tensorboard.plugins.hparams import api as hp
 
 
@@ -67,6 +67,15 @@ class TrajectoryLearner(object):
             print("Wrong mode, should be either Adam, SGD, Adagrad, Adadelta; please check!")
         return
 
+    def saveHistory(self, saved_model_path, history_obj):
+        history_dir = os.path.join(saved_model_path, "Hisotry")
+        if not os.path.exists(history_dir):
+            os.mkdir(history_dir)
+
+        with open(os.path.join(history_dir, "trainHistoryDict"), 'wb') as f:
+            pickle.dump(history_obj.history, f)
+        return
+
     def save(self, optim):
         name = self.model_name + '_epoch_{:}'.format(self.config.max_epochs) + "_" + optim
         path = os.path.join(self.config.checkpoint_dir, name)
@@ -87,36 +96,6 @@ class TrajectoryLearner(object):
         lite_mdl_converted = lite_mdl.convert()
         name = self.model_name + '_epoch_{:}'.format(self.config.max_epochs) + "_" + optim + ".tflite"
         open(os.path.join(lite_model_path, name), "wb").write(lite_mdl_converted)
-        return
-
-    def setTensorboardSummaries(self):
-        # tensor board summary visualization callback
-        path_summary_callback_temp = os.path.join(self.config.checkpoint_dir, 'TrainingLog', 'Logs')
-        if not os.path.exists(path_summary_callback_temp):
-            os.mkdir(path_summary_callback_temp)
-        path_summary_callback = os.path.join(self.config.checkpoint_dir, 'TrainingLog', 'Logs', self.mdl.name + "_" +
-                                             datetime.now().strftime("%Y_%m_%d__%H_%M_%S"))
-        if not os.path.exists(path_summary_callback):
-            os.mkdir(path_summary_callback)
-        self.summary_callback = tf.keras.callbacks.TensorBoard(log_dir=path_summary_callback, histogram_freq=1,
-                                                          write_images=True,
-                                                          # update_freq=self.config.summary_freq_epoch)
-                                                          update_freq='epoch')
-        return
-
-    def setModelCallbacks(self):
-        path_save_callback_temp = os.path.join(self.config.checkpoint_dir, 'TrainingLog')
-        if not os.path.exists(path_save_callback_temp):
-            os.mkdir(path_save_callback_temp)
-        path_save_callback = os.path.join(self.config.checkpoint_dir, 'TrainingLog', self.mdl.name + "_" +
-                                          datetime.now().strftime("%Y_%m_%d__%H_%M_%S"))
-        if not os.path.exists(path_save_callback):
-            os.mkdir(path_save_callback)
-        self.save_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(path_save_callback, ".ckpt"),
-                                                           save_weights_only=True,
-                                                           verbose=False,
-                                                           # save_freq=self.config.save_latest_freq  # saves every few steps...
-                                                           period=self.config.save_latest_period)  # saves every few epochs
         return
 
     def setGPUs(self):
@@ -199,21 +178,16 @@ class TrajectoryLearner(object):
                         loss=self.loss,
                          metrics=['accuracy', 'mse'])
 
-        # set callbacks
-        self.setModelCallbacks()
-        # tensor board summary visualization callback
-        self.setTensorboardSummaries()
-
         # training
-        self.history = self.mdl.fit(train_data,
-                                    epochs=self.config.max_epochs,
-                                    validation_data=val_data,
-                                    callbacks=[self.save_callback, self.summary_callback])
+        history = self.mdl.fit(train_data,
+                               epochs=self.config.max_epochs,
+                               validation_data=val_data)
 
-        self.mdl.summary()
-        if self.config.tflite:
+        if self.config.save_model:
             p = self.save(optim_mode)
-            self.saveTFLiteModel(p, optim_mode)
+            self.saveHistory(p, history)
+            if self.config.tflite:
+                self.saveTFLiteModel(p, optim_mode)
 
         print(20 * "-", "Done Training", 20 * "-")
         return

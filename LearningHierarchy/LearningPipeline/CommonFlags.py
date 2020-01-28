@@ -52,8 +52,8 @@ gflags.DEFINE_integer("save_latest_period", 1, "Save the latest model every seve
 gflags.DEFINE_integer('test_img_width', 300, 'Target Image Width')
 gflags.DEFINE_integer('test_img_height', 200, 'Target Image Height')
 
-gflags.DEFINE_bool('test_phase', True, 'Whether to restore a trained model and test')
-gflags.DEFINE_bool('tflite', False, 'Whether to restore a trained model and test')
+gflags.DEFINE_bool('save_model', True, 'Whether to save the model')
+gflags.DEFINE_bool('tflite', True, 'Whether to restore a trained model and test')
 gflags.DEFINE_bool('export_test_data', True, 'Whether to export test images with annotations')
 gflags.DEFINE_integer('num_test_img_save', 5, 'save only this number of test evaluation images for every Run### folder')
 gflags.DEFINE_bool('test_img_save', False, 'Whether to save test evaluation images or not')
