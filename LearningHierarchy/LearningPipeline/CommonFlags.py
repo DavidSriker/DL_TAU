@@ -7,7 +7,7 @@ rel_path = os.getcwd()
 # Train parameters
 gflags.DEFINE_integer('img_width', 300, 'Target Image Width')
 gflags.DEFINE_integer('img_height', 200, 'Target Image Height')
-gflags.DEFINE_integer('batch_size', 32, 'Batch size in training and evaluation')
+gflags.DEFINE_integer('batch_size', 128, 'Batch size in training and evaluation')
 gflags.DEFINE_float("f", 1.0, "Model Width, float in [0,1]")
 gflags.DEFINE_integer('output_dim', 3, "Number of output dimensionality")
 gflags.DEFINE_float('gamma', 0.1, "Factor the velocity loss for weighted MSE")
@@ -30,8 +30,8 @@ gflags.DEFINE_string('directory_pb_file', os.path.join(rel_path, "LearningHierar
                      "Directory to the pb saved model file")
 
 # Log parameters
-# gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
-gflags.DEFINE_integer("max_epochs", 2, "Maximum number of training epochs")
+gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
+# gflags.DEFINE_integer("max_epochs", 2, "Maximum number of training epochs")
 
 gflags.DEFINE_bool('resume_train', False, 'Whether to restore a trained'
                    ' model for training')
