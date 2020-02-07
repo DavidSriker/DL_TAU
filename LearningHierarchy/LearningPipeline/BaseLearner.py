@@ -1,4 +1,4 @@
-from LearningHierarchy.LearningPipeline.Nets import ResNet8
+from LearningHierarchy.LearningPipeline.Nets import *
 from LearningHierarchy.LearningPipeline.DataUtilities import *
 from datetime import datetime
 import time
@@ -49,6 +49,24 @@ class TrajectoryLearner(object):
         velocity_loss = tf.keras.losses.MSE(y_true=y_true[:, 2], y_pred=y_pred[:, 2])
         loss = coordinate_loss + self.config.gamma * velocity_loss
         return loss
+
+    def setMdl(self, mode="ResNet8", test_mode=False):
+        mdl = []
+        if mode == "ResNet8":
+            mdl = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
+        elif mode == "ResNet8b":
+            mdl = ResNet8b(out_dim=self.config.output_dim, f=self.config.f)
+        elif mode == "TCResNet8":
+            mdl = TCResNet8(out_dim=self.config.output_dim, f=self.config.f)
+        else:
+            print("Wrong mode, should be either ResNet8, ResNet8b, TCResNet; please check!")
+        if mdl != [] and test_mode == False:
+            self.mdl = mdl
+        elif mdl != [] and test_mode == True:
+            self.mdl_test = mdl
+        else:
+            print("Something went wrong; please check!")
+        return
 
     def setOptimizer(self, mode="Adam"):
         if mode == "Adam":
@@ -120,7 +138,8 @@ class TrajectoryLearner(object):
                 os.mkdir(imgas_run_path)
             for img, gt, path in zip(data_dict[run]["images"], data_dict[run]["gt"], data_dict[run]["paths"]):
                 pred = self.mdl_test.call(img)
-                origin_name = path.split("/")[-1]
+                # origin_name = path.split("/")[-1]
+                origin_name = os.path.basename(path)
                 img_path = os.path.join(imgas_run_path, origin_name)
                 self.plotTestPred(img.numpy(), pred.numpy()[0], gt.numpy()[0], img_path)
         return
@@ -153,7 +172,7 @@ class TrajectoryLearner(object):
         gc.collect()
         return
 
-    def train(self, optim_mode="Adam"):
+    def train(self, optim_mode="Adam", net_mode="ResNet8"):
         self.setGPUs()
         # data setup
         train_data, n_samples_train = self.dataLoading(self.data_modes.train)
@@ -163,7 +182,7 @@ class TrajectoryLearner(object):
             os.mkdir(self.config.checkpoint_dir)
 
         # network setup
-        self.mdl = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
+        self.setMdl(net_mode)
         if self.config.resume_train:
             # load .pb file
             print("Resume training from previous checkpoint")
@@ -199,7 +218,7 @@ class TrajectoryLearner(object):
         gt = gt.reshape(gt.shape[0], 3)
         return gt, pred
 
-    def test(self, optim_mode="Adam"):
+    def test(self, optim_mode="Adam", net_mode="ResNet8"):
 
         self.setGPUs()
 
@@ -207,7 +226,8 @@ class TrajectoryLearner(object):
         test_data, n_samples_test, test_img_data = self.dataLoading(self.data_modes.test)
 
         # network setup
-        self.mdl_test = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
+        # self.mdl_test = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
+        self.setMdl(net_mode, test_mode=True)
         mdl_path = os.path.join(self.config.checkpoint_dir, self.model_name +
                                                 '_epoch_{:}'.format(self.config.max_epochs) + "_" + optim_mode)
         self.mdl_test.load_weights(mdl_path + "/")
