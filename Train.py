@@ -2,7 +2,7 @@ from LearningHierarchy.LearningPipeline.CommonFlags import *
 from LearningHierarchy.LearningPipeline.BaseLearner import *
 import sys
 
-experiment_num = 2
+experiment_num = 3
 
 
 optimizer_mode = ["Adam",
@@ -35,3 +35,9 @@ elif experiment_num == 2:
             FLAGS.max_epochs = e
             trl = TrajectoryLearner(FLAGS)
             trl.train()
+elif experiment_num == 3:
+    model_names = ["ResNet8", "ResNet8b", "TCResNet8"]
+    for mdl in model_names:
+        FLAGS.net_name = mdl
+        trl = TrajectoryLearner(FLAGS)
+        trl.train()
