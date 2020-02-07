@@ -18,4 +18,4 @@ trl = TrajectoryLearner(FLAGS)
 if FLAGS.tflite:
     trl.testTFLite(optimizer_mode[2])
 else:
-    trl.test(optimizer_mode[3])
+    trl.test(optimizer_mode[3], net_mode=FLAGS.net_name)
