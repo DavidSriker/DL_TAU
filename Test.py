@@ -1,5 +1,5 @@
-from LearningHierarchy.LearningPipeline.CommonFlags import *
-from LearningHierarchy.LearningPipeline.BaseLearner import *
+from LearningPipeline.CommonFlags import *
+from LearningPipeline.BaseLearner import *
 import sys
 
 optimizer_mode = ["Adam",

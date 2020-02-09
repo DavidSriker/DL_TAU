@@ -1,8 +1,8 @@
-from LearningHierarchy.LearningPipeline.CommonFlags import *
-from LearningHierarchy.LearningPipeline.BaseLearner import *
+from LearningPipeline.CommonFlags import *
+from LearningPipeline.BaseLearner import *
 import sys
 
-experiment_num = 3
+experiment_num = 0
 
 
 optimizer_mode = ["Adam",
