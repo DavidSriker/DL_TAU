@@ -236,27 +236,34 @@ class TrajectoryLearner(object):
                          metrics=['accuracy', 'mse'])
 
         # evaluate
+        time_s = time.time()
         results = self.mdl_test.evaluate(test_data)
+        total_time = time.time() - time_s
+        print(20 * "~~")
+        print("TF evaluate took {:}:".format(total_time))
+        print("the inference time is per image: {:.6f}".format(total_time / n_samples_test))
+        print("the inference fps is: {:.6f}".format(n_samples_test / total_time))
+        print(20 * "~~")
 
-        # # custom evaluate
-        # pred_vec = []
-        # gt_vec = []
-        # time_s = time.time()
-        # for img, gt in test_data:
-        #     pred_vec.append(self.mdl_test.call(img).numpy())
-        #     gt_vec.append(gt.numpy())
-        # total_time = time.time() - time_s
-        # gt_vec, pred_vec = self.formatVectorsForLoss(gt_vec, pred_vec)
-        #
-        # print(20 * "-", "Done Evaluating", 20 * "-")
-        # print("evaluate:")
-        # print('Test Loss: {:}\nTest Accuracy: {:}\nTest MSE: {:}'.format(*results))
-        # print("custom evaluate took {:}:".format(total_time))
-        # # TODO - What is the loss that we should print
-        # print('Test Loss: {:}'.format(np.mean(self.loss(gt_vec, pred_vec))))
+        # custom evaluate
+        pred_vec = []
+        gt_vec = []
+        time_s = time.time()
+        for img, gt in test_data:
+            pred_vec.append(self.mdl_test.call(img).numpy())
+            gt_vec.append(gt.numpy())
+        total_time = time.time() - time_s
+        gt_vec, pred_vec = self.formatVectorsForLoss(gt_vec, pred_vec)
+        print(20 * "~~")
+        print("Custom evaluate took {:}:".format(total_time))
+        print("the inference time is per image: {:.6f}".format(total_time / n_samples_test))
+        print("the inference fps is: {:.6f}".format(n_samples_test / total_time))
+        print(20 * "~~")
 
+        print(20 * "-", "Done Evaluating", 20 * "-")
+        print('Test Loss: {:}\nTest Accuracy: {:}\nTest MSE: {:}'.format(*results))
 
-
+        # exporting images with annotations
         if self.config.export_test_data:
             # predictions vs gt plot and save on image
             path_eval_imgs = os.path.join(mdl_path, 'EvalImags')
@@ -288,7 +295,7 @@ class TrajectoryLearner(object):
         out_details = self.tf_lite_mdl.get_output_details()
 
         # data setup
-        test_data, n_samples_test = self.dataLoading(self.data_modes.test)
+        test_data, n_samples_test, test_img_data = self.dataLoading(self.data_modes.test)
 
         # custom evaluate
         pred_vec = []
@@ -302,8 +309,9 @@ class TrajectoryLearner(object):
         total_time = time.time() - time_s
         gt_vec, pred_vec = self.formatVectorsForLoss(gt_vec, pred_vec)
 
-        print("custom evaluate took {:}:".format(total_time))
-        # TODO - What is the loss that we should print
+        print("TF-Lite custom evaluate took {:}:".format(total_time))
+        print("the inference time is: {:.6f}".format(total_time / n_samples_test))
+        print("the inference fps is: {:.6f}".format(n_samples_test / total_time))
         print("TFLITE Test Loss: {:}".format(np.mean(self.loss(gt_vec, pred_vec))))
 
         return
