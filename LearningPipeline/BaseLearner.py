@@ -50,7 +50,7 @@ class TrajectoryLearner(object):
         return loss
 
     def setMdl(self, mode="ResNet8", test_mode=False):
-        mdl = []
+        self.model_name = mode
         if mode == "ResNet8":
             mdl = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
         elif mode == "ResNet8b":
@@ -59,13 +59,16 @@ class TrajectoryLearner(object):
             mdl = TCResNet8(out_dim=self.config.output_dim, f=self.config.f)
         else:
             print("Wrong mode, should be either ResNet8, ResNet8b, TCResNet; please check!")
-        if mdl != [] and test_mode == False:
-            self.mdl = mdl
-        elif mdl != [] and test_mode == True:
-            self.mdl_test = mdl
-        else:
-            print("Something went wrong; please check!")
-        return
+            return
+
+        return mdl
+        # if not test_mode:
+        #     self.mdl = mdl
+        # elif test_mode:
+        #     self.mdl_test = mdl
+        # else:
+        #     print("Something went wrong; please check!")
+        # return
 
     def setOptimizer(self, mode="Adam"):
         if mode == "Adam":
@@ -181,16 +184,7 @@ class TrajectoryLearner(object):
             os.mkdir(self.config.checkpoint_dir)
 
         # network setup
-        self.setMdl(net_mode)
-        if self.config.resume_train:
-            # load .pb file
-            print("Resume training from previous checkpoint")
-            latest_ckpt_file = max([os.path.join(dp, f) for dp, dn, filenames in
-                                    os.walk(os.path.join(self.config.checkpoint_dir, 'TrainingLog')) for f in
-                                    filenames if '.ckpt' in f], key=os.path.getmtime)
-            self.latest_ckpt_directory = os.path.dirname(latest_ckpt_file)
-            self.mdl.load_weights(os.path.join(self.latest_ckpt_directory, '.ckpt'))
-
+        self.mdl = self.setMdl(net_mode)
         self.setOptimizer(optim_mode)
         self.mdl.compile(optimizer=self.optim,
                         loss=self.loss,
@@ -225,8 +219,7 @@ class TrajectoryLearner(object):
         test_data, n_samples_test, test_img_data = self.dataLoading(self.data_modes.test)
 
         # network setup
-        # self.mdl_test = ResNet8(out_dim=self.config.output_dim, f=self.config.f)
-        self.setMdl(net_mode, test_mode=True)
+        self.mdl_test = self.setMdl(net_mode)
         mdl_path = os.path.join(self.config.checkpoint_dir, self.model_name +
                                                 '_epoch_{:}'.format(self.config.max_epochs) + "_" + optim_mode)
         self.mdl_test.load_weights(mdl_path + "/")
@@ -311,7 +304,36 @@ class TrajectoryLearner(object):
 
         print("TF-Lite custom evaluate took {:}:".format(total_time))
         print("the inference time is: {:.6f}".format(total_time / n_samples_test))
-        print("the inference fps is: {:.6f}".format(n_samples_test / total_time))
+        print("the inference fps is per image: {:.6f}".format(n_samples_test / total_time))
         print("TFLITE Test Loss: {:}".format(np.mean(self.loss(gt_vec, pred_vec))))
 
         return
+
+    def initDronesMode(self, optim_mode):
+        name = self.model_name + "_epoch_{:}".format(self.config.max_epochs) + "_" + optim_mode
+
+        # set the TF model
+        self.drone_mdl = self.setMdl(mode=self.model_name)
+        mdl_path = os.path.join(self.config.checkpoint_dir, name)
+        self.drone_mdl.load_weights(mdl_path + "/")
+        self.setOptimizer(optim_mode)
+        self.drone_mdl.compile(optimizer=self.optim,
+                              loss=self.loss,
+                              metrics=['accuracy', 'mse'])
+
+        # set the TF-Lite model
+        tflite_path = os.path.join(self.config.checkpoint_dir, name + "/", "TFLITE_MODEL", name + ".tflite")
+        # network setup
+        self.tf_lite_drone_mdl = tf.lite.Interpreter(model_path=tflite_path)
+        self.tf_lite_drone_mdl.allocate_tensors()
+        return
+
+    def droneInference(self, img, tf_lite_flag=False):
+        if not tf_lite_flag:
+            in_details = self.tf_lite_drone_mdl.get_input_details()
+            out_details = self.tf_lite_drone_mdl.get_output_details()
+            self.tf_lite_drone_mdl.set_tensor(in_details[0]['index'], img.numpy())
+            self.tf_lite_drone_mdl.invoke()
+            return self.tf_lite_mdl.get_tensor(out_details[0]['index'])
+        else:
+            return self.drone_mdl.call(img).numpy()
