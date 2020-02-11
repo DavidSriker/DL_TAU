@@ -60,15 +60,7 @@ class TrajectoryLearner(object):
         else:
             print("Wrong mode, should be either ResNet8, ResNet8b, TCResNet; please check!")
             return
-
         return mdl
-        # if not test_mode:
-        #     self.mdl = mdl
-        # elif test_mode:
-        #     self.mdl_test = mdl
-        # else:
-        #     print("Something went wrong; please check!")
-        # return
 
     def setOptimizer(self, mode="Adam"):
         if mode == "Adam":
@@ -329,11 +321,11 @@ class TrajectoryLearner(object):
         return
 
     def droneInference(self, img, tf_lite_flag=False):
-        if not tf_lite_flag:
+        if tf_lite_flag:
             in_details = self.tf_lite_drone_mdl.get_input_details()
             out_details = self.tf_lite_drone_mdl.get_output_details()
             self.tf_lite_drone_mdl.set_tensor(in_details[0]['index'], img.numpy())
             self.tf_lite_drone_mdl.invoke()
-            return self.tf_lite_mdl.get_tensor(out_details[0]['index'])
+            return self.tf_lite_drone_mdl.get_tensor(out_details[0]['index'])
         else:
             return self.drone_mdl.call(img).numpy()

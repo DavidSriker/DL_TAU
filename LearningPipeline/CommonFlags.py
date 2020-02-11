@@ -29,8 +29,8 @@ gflags.DEFINE_string('directory_pb_file', os.path.join(rel_path, "LearningPipeli
                      "Directory to the pb saved model file")
 
 # Log parameters
-# gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
-gflags.DEFINE_integer("max_epochs", 2, "Maximum number of training epochs")
+gflags.DEFINE_integer("max_epochs", 100, "Maximum number of training epochs")
+# gflags.DEFINE_integer("max_epochs", 2, "Maximum number of training epochs")
 
 #### TODO - Do we need this?
 gflags.DEFINE_bool('resume_train', False, 'Whether to restore a trained'
