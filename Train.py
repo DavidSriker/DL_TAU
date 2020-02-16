@@ -19,7 +19,7 @@ except gflags.FlagsError:
 
 if experiment_num == 0:
     trl = TrajectoryLearner(FLAGS)
-    trl.train(optim_mode="Adam", net_mode="TCResNet8") #net_mode=FLAGS.net_name)
+    trl.train(optim_mode="Adam", net_mode="ResNet8") #net_mode=FLAGS.net_name)
 elif experiment_num == 1:
     for opt in optimizer_mode:
         trl = TrajectoryLearner(FLAGS)
