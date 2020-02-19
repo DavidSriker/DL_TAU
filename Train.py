@@ -2,7 +2,7 @@ from LearningPipeline.CommonFlags import *
 from LearningPipeline.BaseLearner import *
 import sys
 
-experiment_num = 0
+experiment_num = 3
 
 
 optimizer_mode = ["Adam",
@@ -36,7 +36,7 @@ elif experiment_num == 2:
             trl = TrajectoryLearner(FLAGS)
             trl.train()
 elif experiment_num == 3:
-    model_names = ["ResNet8b", "TCResNet8", "ResNet8"]
+    model_names = ["TCResNet8", "ResNet8b"]
     for mdl in model_names:
         FLAGS.net_name = mdl
         trl = TrajectoryLearner(FLAGS)

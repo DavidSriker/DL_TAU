@@ -286,7 +286,7 @@ class TCResNet8(tf.keras.Model):
             l.Flatten(),  # from 3,1,1,96 we get 3,96
             l.Activation('relu'),
             l.Dropout(DROP_PROBABILITY),
-            l.Dense(int(256 * f)),
+            l.Dense(int(46 * f)),
             l.Activation('softmax'),
             l.Dense(out_dim)]
         )
