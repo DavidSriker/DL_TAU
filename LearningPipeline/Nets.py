@@ -14,8 +14,7 @@ class ResNet8(tf.keras.Model):
         KERNEL_5 = 5
         POOL_SIZE = 3
         L2_REGULIZER_VAL = 1e-4
-        # DROP_PROBABILITY = 0.5
-        DROP_PROBABILITY = 0.0
+        DROP_PROBABILITY = 0.5
 
 
         # convolution 2D
