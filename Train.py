@@ -36,7 +36,7 @@ elif experiment_num == 2:
             trl = TrajectoryLearner(FLAGS)
             trl.train()
 elif experiment_num == 3:
-    model_names = ["TCResNet8", "ResNet8b"]
+    model_names = ["TCResNet8", "ResNet8b", "ResNet8"]
     for mdl in model_names:
         FLAGS.net_name = mdl
         trl = TrajectoryLearner(FLAGS)

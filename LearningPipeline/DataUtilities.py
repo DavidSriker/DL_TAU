@@ -59,7 +59,7 @@ class DataExtractor():
 
 
 class ImagesIterator(Iterator):
-    def __init__(self, directory, new_img_dim=(300, 200, 3), shuffle=True, batch_s=32, seed=2020):
+    def __init__(self, directory, new_img_dim=(200, 300, 3), shuffle=True, batch_s=32, seed=2020):
         self.data = DataExtractor(directory)
         self.num_samples = self.data.num_samples
         self.batch_s = batch_s
