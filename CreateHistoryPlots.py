@@ -206,3 +206,123 @@ plt.legend((rect_g_0_0001[0], rect_g_0_001[0], rect_g_0_01[0], rect_g_0_1[0]),
 # plt.show()
 plt.savefig(os.path.join(images_dir, 'gamma_exp.eps'), format='eps')
 plt.close()
+
+##
+model_dirs = ["ResNet8_epoch_200_Adam", "ResNet8b_epoch_200_Adam", "TCResNet8_epoch_200_Adam"]
+##
+for mdl in model_dirs:
+    mdl_name = mdl.split("_")[-1]
+    path = os.path.join(current_dir, "PlotsData", mdl, "Hisotry")
+    hist_dict = pickle.load(open(os.path.join(path, "trainHistoryDict"), "rb"))
+
+    for t in ["loss", "rmse"]:
+        plt.figure(figsize=(3.5, 3.2))
+        ax = plt.subplot(111)
+        if t == "loss":
+            ax.plot(hist_dict['loss'])
+            ax.plot(hist_dict['val_loss'])
+        elif t == "rmse":
+            ax.plot(np.sqrt(np.multiply(100,hist_dict['mse']))/100)
+            ax.plot(np.sqrt(np.multiply(100,hist_dict['val_mse']))/100)
+
+        box = ax.get_position()
+        ax.set_position([box.x0 + box.width * 0.06, box.y0 + box.height * 0.1,
+                        box.width * 0.94, box.height * 0.9])
+        if t == "loss":
+            plt.title('{:}, Loss Vs. Epochs'.format(mdl_name), fontsize=8, fontweight='bold')
+            plt.ylabel('Loss', fontsize=7, fontweight='bold')
+            plt.xlabel('# Epoch', fontsize=7, fontweight='bold')
+            plt.legend(['Training', 'Validation'],
+                        loc='upper center', bbox_to_anchor=(0.5, -0.16),
+                        fancybox=True, shadow=True, ncol=2, fontsize=7)
+        elif t == "rmse":
+            plt.title('{:}, RMSE Vs. Epochs'.format(mdl_name), fontsize=8, fontweight='bold')
+            plt.ylabel('RMSE', fontsize=7, fontweight='bold')
+            plt.xlabel('# Epoch', fontsize=7, fontweight='bold')
+            plt.legend(['Training', 'Validation'],
+                        loc='upper center', bbox_to_anchor=(0.5, -0.16),
+                        fancybox=True, shadow=True, ncol=2, fontsize=7)
+
+        plt.xticks(fontsize=8, fontweight='bold')
+        plt.yticks(fontsize=8, fontweight='bold')
+        plt.grid(True)
+        plt.savefig(os.path.join(images_dir, '{:}_{:}.eps'.format(mdl, t)), format='eps')
+        plt.close()
+
+# figure 15 validation rmse for different nets
+plt.figure(figsize=(3.5, 3.2))
+ax = plt.subplot(111)
+for mdl in model_dirs_2:
+    path = os.path.join(current_dir, "PlotsData", mdl, "Hisotry")
+    hist_dict = pickle.load(open(os.path.join(path, "trainHistoryDict"), "rb"))
+
+    ax.plot(np.sqrt(np.multiply(100,hist_dict['val_mse']))/100)
+    box = ax.get_position()
+    ax.set_position([box.x0 + box.width * 0.02, box.y0 + box.height * 0.05,
+                    box.width * 0.98, box.height * 0.95])
+    plt.title('Different Nets, Validation RMSE', fontsize=8, fontweight='bold')
+    plt.ylabel('RMSE', fontsize=7, fontweight='bold')
+    plt.xlabel('# Epoch', fontsize=7, fontweight='bold')
+
+plt.xticks(fontsize=8, fontweight='bold')
+plt.yticks(fontsize=8, fontweight='bold')
+plt.legend(['ResNet8', 'ResNet7', 'TC-ResNet8'],
+            loc='upper center', bbox_to_anchor=(0.5, -0.2),
+            fancybox=True, shadow=True, ncol=4, fontsize=7)
+plt.grid(True)
+plt.savefig(os.path.join(images_dir, 'DifferentNetsValiadationRMSE.eps'), format='eps')
+plt.close()
+
+# figure 16 validation loss for different nets
+plt.figure(figsize=(3.5, 3.2))
+ax = plt.subplot(111)
+for mdl in model_dirs_2:
+    path = os.path.join(current_dir, "PlotsData", mdl, "Hisotry")
+    hist_dict = pickle.load(open(os.path.join(path, "trainHistoryDict"), "rb"))
+
+    ax.plot(hist_dict['val_loss'])
+    box = ax.get_position()
+    ax.set_position([box.x0 + box.width * 0.02, box.y0 + box.height * 0.05,
+                    box.width * 0.98, box.height * 0.95])
+    plt.title('Different Nets, Validation Loss', fontsize=8, fontweight='bold')
+    plt.ylabel('Loss', fontsize=7, fontweight='bold')
+    plt.xlabel('# Epoch', fontsize=7, fontweight='bold')
+
+plt.xticks(fontsize=8, fontweight='bold')
+plt.yticks(fontsize=8, fontweight='bold')
+plt.legend(['ResNet8', 'ResNet7', 'TC-ResNet8'],
+            loc='upper center', bbox_to_anchor=(0.5, -0.2),
+            fancybox=True, shadow=True, ncol=4, fontsize=7)
+plt.grid(True)
+# plt.show()
+plt.savefig(os.path.join(images_dir, 'DifferentNetsValiadationLoss.eps'), format='eps')
+plt.close()
+
+# figure 17 TF TFlite timing per different nets
+width = 0.35  # the width of the bars
+fig = plt.figure(figsize=(3.5, 3.2))
+ax = fig.add_subplot(111)
+ax.set_axisbelow(True)
+ax.grid(True)
+
+y_TF = [81.896787, 108.975292, 87.859126]
+rects_TF = ax.bar(np.arange(3) - width / 2, y_TF, width, color=colors['darkred'])
+y_TFLITE = [164.634252, 205.332021, 340.987400]
+rects_TFLITE = ax.bar(np.arange(3) + width / 2, y_TFLITE, width, color=colors['dodgerblue'])
+box = ax.get_position()
+ax.set_position([box.x0 + box.width * 0.05, box.y0 + box.height * 0.1,
+                box.width * 0.95, box.height * 0.9])
+
+ax.set_ylabel('Frames Per Second', fontsize=7, fontweight='bold')
+ax.set_xlabel('Model', fontsize=7, fontweight='bold')
+ax.set_xticks(np.arange(3))
+ax.set_xticklabels(('ResNet8', 'ResNet7', 'TC-ResNet8'), fontsize=6, fontweight='bold')
+plt.yticks(fontsize=8, fontweight='bold')
+plt.legend((rects_TF[0], rects_TFLITE[0]), ('TF', 'TF-Lite'),
+            loc='upper center', bbox_to_anchor=(0.5, -0.16),
+            fancybox=True, shadow=True, ncol=2, fontsize=7)
+plt.title('TensorFlow Version Effect\nFrames Per Second Vs. Different Networks', fontsize=8, fontweight='bold')
+# plt.show()
+plt.savefig(os.path.join(images_dir, 'DifferentNetsFPSComparisonTF_TFLite.eps'), format='eps')
+plt.savefig(os.path.join(images_dir, 'DifferentNetsFPSComparisonTF_TFLite.png'), format='png')
+plt.close()

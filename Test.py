@@ -15,7 +15,7 @@ except gflags.FlagsError:
     sys.exit(1)
 
 trl = TrajectoryLearner(FLAGS)
-if FLAGS.tflite:
-    trl.testTFLite(optimizer_mode[2])
-else:
-    trl.test(optimizer_mode[3], net_mode=FLAGS.net_name)
+if FLAGS.tflite:  # test the TF lite model
+    trl.testTFLite(optimizer_mode[0])
+else:  # test the regular TF model
+    trl.test(optimizer_mode[0], net_mode=FLAGS.net_name)

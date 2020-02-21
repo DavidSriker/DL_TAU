@@ -2,7 +2,6 @@ import os
 import glob
 import re
 import numpy as np
-# import cv2
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import Iterator
 
@@ -66,17 +65,6 @@ class ImagesIterator(Iterator):
         self.img_dims = (new_img_dim[0], new_img_dim[1])
         super(ImagesIterator, self).__init__(self.data.num_samples, batch_s, shuffle, seed)
         return
-
-    # not in use for the moment
-    # def imagePreperation(self, img_path):
-    #     img = self.loadImage(img_path)
-    #     if img.shape != self.new_img_dim:
-    #         # Linear interpolation for speed and performance
-    #         img = cv2.resize(img, self.new_img_dim, interpolation=cv2.INTER_LINEAR)
-    #     return cv2.cvtcolor(img, cv2.COLOR_BGR2RGB)
-    #
-    # def loadImage(self, img_path):
-    #     return cv2.imread(img_path)
 
     def generateData(self):
         seed = np.random.randint(0, 2 ** 31 - 1)

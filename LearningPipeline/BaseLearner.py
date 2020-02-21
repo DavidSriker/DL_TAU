@@ -34,7 +34,7 @@ class TrajectoryLearner(object):
         elif mode == 1:
             img_iter = ImagesIterator(directory=self.config.val_dir)
         elif mode == 2:
-            img_iter = ImagesIterator(directory=self.config.val_dir, batch_s=1)
+            img_iter = ImagesIterator(directory=self.config.test_dir, batch_s=1)
         else:
             print("Wrong mode, should be either 0,1,2; please check!")
         data_iter = img_iter.generateBatches()
