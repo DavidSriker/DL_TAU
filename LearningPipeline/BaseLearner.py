@@ -155,7 +155,6 @@ class TrajectoryLearner(object):
     def plotTestPred(self, img, pred, gt, img_path):
         fig, ax = plt.subplots(1)
         plt.get_current_fig_manager().full_screen_toggle()
-        ax.set_title("Losses: coordinate={:.2f}%, velocity={:.2f}%, total={:.2f}%".format(*self.lossForPlots(pred, gt)))
         ax.imshow(img.reshape(img.shape[1:]))
         pred, gt = self.unnormalizeCoordinates(pred, gt)
         ax.scatter(pred[0], pred[1], color='green')
