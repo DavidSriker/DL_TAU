@@ -30,7 +30,7 @@ trl.initDronesMode(optim_mode=optimizer_mode)
 drone_test_folder = os.path.join(os.getcwd(), "DroneTest")
 for f in os.listdir(drone_test_folder):
     if f.lower().endswith('.jpg'):
-        im = transformData(os.path.join(drone_test_folder, f), (300, 200))
+        im = transformData(os.path.join(drone_test_folder, f), (200, 300))
         tf_res = trl.droneInference(im)
         tf_lite_res = trl.droneInference(im, tf_lite_flag=True)
         print("TF Result: {:}".format(tf_res))
