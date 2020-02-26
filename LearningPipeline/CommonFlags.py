@@ -14,7 +14,7 @@ gflags.DEFINE_string('test_dir', os.path.join(rel_path, "Data", "test_data"),
                      'Folder containing test data')
 gflags.DEFINE_string('checkpoint_dir', os.path.join(rel_path, "LearningPipeline", "Checkpoint"),
                      "Directory name to save checkpoints and logs.")
-gflags.DEFINE_integer("max_epochs", 200, "Maximum number of training epochs")
+gflags.DEFINE_integer("max_epochs", 300, "Maximum number of training epochs")
 
 # Train parameters
 gflags.DEFINE_integer('img_width', 200, 'Target Image Width')

@@ -7,6 +7,8 @@ In addition, tensorflow lite model conversion is also featured.
 
 The available code scripts are used to train and evaluate various *ResNet* based models.
 
+The manuscript accompanying this work.
+
 
 #### credits:
 This work was performed on the basis of the UZH, Robotics and Perception Group.  
@@ -99,7 +101,9 @@ Before testing the model, several option changes can be done in the `CommonFlags
     * `export_test_data`
     * `num_test_img_save`
     * `test_img_save`
-
+* Another issue is the amount of epochs the model was trained currently there are 3 models that was trained for 300 epochs in the case one retrain the model adjust appropretly in the `CommonFlags`:
+  * Train parameters
+  * Train Optimizer Params
 
 Execute testing by running:  
 ```
@@ -111,6 +115,9 @@ python Test.py
 In order to perform inference over the saved model, several options can be first tuned in the `CommonFlags` script under the following comments:
 * Network name
     * `net_name`
+* Another issue is the amount of epochs the model was trained currently there are 3 models that was trained for 300 epochs in the case one retrain the model adjust appropretly in the `CommonFlags`:
+    * Train parameters
+    * Train Optimizer Params
 
 In addition, the image size should be set in the *DroneMode.py* script.
 
@@ -123,7 +130,7 @@ python DroneMode.py
 
 ## Jetson TX2
 
-The code works as expected, but in order to activate it on the Jetson TX2 one should install all the right dependencies via NVIDIA-SDK Manager; For more details please refer to the document: **DL_TAU.pdf** in the repository.
+The code works as expected, but in order to activate it on the Jetson TX2 one should install all the right dependencies via NVIDIA-SDK Manager; For more details please refer to the document: **Articles/DL_TAU.pdf** in the repository.
 
 ## Tasks:
 - [x] TF-2 implementation
