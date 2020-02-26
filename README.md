@@ -4,10 +4,8 @@
 
 This repo contains tensorflow 2 implementation of a zero-shot sim2real method for deep drone racing.  
 In addition, tensorflow lite model conversion is also featured.
-
 The available code scripts are used to train and evaluate various *ResNet* based models.
-
-The manuscript accompanying this work.
+The manuscript accompanying this work also attached, and a small portion of the data for fast activation and sanity check.
 
 
 #### credits:
